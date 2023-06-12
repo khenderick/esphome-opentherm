@@ -1,5 +1,6 @@
 #pragma once
 
+#include "esphome/core/helpers.h"
 #include "esphome/core/defines.h"
 #include "esphome/core/component.h"
 #include "esphome/core/gpio.h"

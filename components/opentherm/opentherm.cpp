@@ -146,10 +146,12 @@ void OpenThermComponent::dump_config() {
 #endif
 #ifdef USE_NUMBER
   if (this->ch_setpoint_temperature_number_) {
-    this->ch_setpoint_temperature_number_->dump_custom_config("  ", "CH setpoint temperature:");
+    LOG_NUMBER("  ", "CH setpoint temperature:", this->ch_setpoint_temperature_number_);
+    this->ch_setpoint_temperature_number_->dump_custom_config("  ");
   }
   if (this->dhw_setpoint_temperature_number_) {
-    this->dhw_setpoint_temperature_number_->dump_custom_config("  ", "DHW setpoint temperature:");
+    LOG_NUMBER("  ", "DHW setpoint temperature:", this->dhw_setpoint_temperature_number_);
+    this->dhw_setpoint_temperature_number_->dump_custom_config("  ");
   }
 #endif
 }

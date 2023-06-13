@@ -112,6 +112,7 @@ class OpenThermComponent : public PollingComponent {
   volatile uint32_t response_timestamp_ = 0;
   volatile uint8_t response_bit_index_ = 0;
 
+  void request_(OpenThermMessageType type, OpenThermMessageID id, unsigned int data);
   void set_boiler_status_();
 
   void enqueue_request_(uint32_t request);

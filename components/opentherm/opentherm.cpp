@@ -83,13 +83,15 @@ void OpenThermComponent::loop() {
     // The CH setpoint must be written at a fast interval or the boiler
     // might revert to a build-in default as a safety measure.
     last_millis_ = millis();
-    this->enqueue_request_(
-        this->build_request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::CH_SETPOINT,
-                             this->temperature_to_data_(this->ch_setpoint_temperature_number_->state)));
-    if (this->confirmed_dhw_setpoint_ != this->dhw_setpoint_temperature_number_->state) {
-      this->enqueue_request_(
-          this->build_request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::DHW_SETPOINT,
-                               this->temperature_to_data_(this->dhw_setpoint_temperature_number_->state)));
+    if (this->ch_setpoint_temperature_number_) {
+      this->request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::CH_SETPOINT,
+                     this->temperature_to_data_(this->ch_setpoint_temperature_number_->state));
+    }
+    if (this->dhw_setpoint_temperature_number_) {
+      if (this->confirmed_dhw_setpoint_ != this->dhw_setpoint_temperature_number_->state) {
+        this->request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::DHW_SETPOINT,
+                       this->temperature_to_data_(this->dhw_setpoint_temperature_number_->state));
+      }
     }
   }
 #endif
@@ -98,22 +100,31 @@ void OpenThermComponent::loop() {
 }
 
 void OpenThermComponent::update() {
-  this->enqueue_request_(
-      this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::RETURN_WATER_TEMP, 0));
-  this->enqueue_request_(
-      this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_WATER_TEMP, 0));
-  this->enqueue_request_(this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PRESSURE, 0));
-  this->enqueue_request_(this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REL_MOD_LEVEL, 0));
-  this->enqueue_request_(
-      this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0));
+#ifdef USE_SENSOR
+  if (this->return_temperature_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::RETURN_WATER_TEMP, 0);
+  }
+  if (this->boiler_temperature_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_WATER_TEMP, 0);
+  }
+  if (this->pressure_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PRESSURE, 0);
+  }
+  if (this->modulation_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REL_MOD_LEVEL, 0);
+  }
   if (!this->dhw_min_max_read_) {
-    this->enqueue_request_(
-        this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0));
+    if (this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) {
+      this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0);
+    }
   }
   if (!this->ch_min_max_read_) {
-    this->enqueue_request_(
-        this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0));
+    if (this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) {
+      this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0);
+    }
   }
+#endif
+  this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
   this->set_boiler_status_();
 }
 
@@ -429,12 +440,16 @@ void OpenThermComponent::publish_binary_sensor_state_(binary_sensor::BinarySenso
 }
 #endif
 
+void OpenThermComponent::request_(OpenThermMessageType type, OpenThermMessageID id, unsigned int data) {
+  this->enqueue_request_(this->build_request_(type, id, data));
+}
+
 void OpenThermComponent::set_boiler_status_() {
   // Fields: CH enabled | DHW enabled | cooling | outside temperature compensation | central heating 2
   unsigned int data = this->wanted_ch_enabled_ | (this->wanted_dhw_enabled_ << 1) |
                       (this->wanted_cooling_enabled_ << 2) | (false << 3) | (false << 4);
   data <<= 8;
-  this->enqueue_request_(this->build_request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::STATUS, data));
+  this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::STATUS, data);
 }
 
 void OpenThermComponent::enqueue_request_(uint32_t request) {

@@ -107,6 +107,9 @@ void OpenThermComponent::update() {
   if (this->boiler_temperature_sensor_) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_WATER_TEMP, 0);
   }
+  if (this->dhw_flow_rate_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_FLOW_RATE, 0);
+  }
   if (this->pressure_sensor_) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PRESSURE, 0);
   }
@@ -137,6 +140,7 @@ void OpenThermComponent::dump_config() {
   LOG_SENSOR("  ", "CH max temperature:", this->ch_max_temperature_sensor_);
   LOG_SENSOR("  ", "DHW min temperature:", this->dhw_min_temperature_sensor_);
   LOG_SENSOR("  ", "DHW max temperature:", this->dhw_max_temperature_sensor_);
+  LOG_SENSOR("  ", "DHW flow rate:", this->dhw_flow_rate_sensor_);
   LOG_SENSOR("  ", "Pressure:", this->pressure_sensor_);
   LOG_SENSOR("  ", "Modulation:", this->modulation_sensor_);
   LOG_SENSOR("  ", "Boiler temperature:", this->boiler_temperature_sensor_);
@@ -385,6 +389,9 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         break;
       case OpenThermMessageID::BOILER_WATER_TEMP:
         this->publish_sensor_state_(this->boiler_temperature_sensor_, this->get_float_(response));
+        break;
+      case OpenThermMessageID::DHW_FLOW_RATE:
+        this->publish_sensor_state_(this->dhw_flow_rate_sensor_, this->get_float_(response));
         break;
       case OpenThermMessageID::CH_PRESSURE:
         this->publish_sensor_state_(this->pressure_sensor_, this->get_float_(response));

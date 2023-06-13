@@ -99,8 +99,6 @@ class OpenThermComponent : public PollingComponent {
   ISRInternalGPIOPin isr_read_pin_;
 
   std::queue<uint32_t> buffer_;
-  bool ch_min_max_read_ = false;
-  bool dhw_min_max_read_ = false;
   float confirmed_dhw_setpoint_ = 0;
   uint32_t last_millis_ = 0;
   bool wanted_ch_enabled_ = false;

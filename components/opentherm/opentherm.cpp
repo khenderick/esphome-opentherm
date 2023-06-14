@@ -119,15 +119,11 @@ void OpenThermComponent::update() {
   if (this->dhw_temperature_sensor_) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP, 0);
   }
-  if (!this->dhw_min_max_read_) {
-    if (this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) {
-      this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0);
-    }
+  if (this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0);
   }
-  if (!this->ch_min_max_read_) {
-    if (this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) {
-      this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0);
-    }
+  if (this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0);
   }
 #endif
   this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
@@ -408,14 +404,12 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         break;
 #endif
       case OpenThermMessageID::DHW_TEMP_MAX_MIN:
-        this->dhw_min_max_read_ = true;
 #ifdef USE_SENSOR
         this->publish_sensor_state_(this->dhw_max_temperature_sensor_, response >> 8 & 0xFF);
         this->publish_sensor_state_(this->dhw_min_temperature_sensor_, response & 0xFF);
 #endif
         break;
       case OpenThermMessageID::CH_TEMP_MAX_MIN:
-        this->ch_min_max_read_ = true;
 #ifdef USE_SENSOR
         this->publish_sensor_state_(this->ch_max_temperature_sensor_, response >> 8 & 0xFF);
         this->publish_sensor_state_(this->ch_min_temperature_sensor_, response & 0xFF);

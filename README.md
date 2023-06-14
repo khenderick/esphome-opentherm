@@ -55,6 +55,8 @@ sensor:
       name: "pressure"
     modulation:
       name: "modulation"
+    dhw_temperature:
+      name: "DHW temperature"
     boiler_temperature:
       name: "boiler temperature"
     return_temperature:

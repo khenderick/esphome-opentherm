@@ -20,6 +20,7 @@ CONF_DHW_MIN_TEMPERATURE = "dhw_min_temperature"
 CONF_DHW_MAX_TEMPERATURE = "dhw_max_temperature"
 CONF_DHW_FLOW_RATE = "dhw_flow_rate"
 CONF_MODULATION = "modulation"
+CONF_DHW_TEMPERATURE = "dhw_temperature"
 CONF_BOILER_TEMPERATURE = "boiler_temperature"
 CONF_RETURN_TEMPERATURE = "return_temperature"
 
@@ -37,6 +38,7 @@ TYPES = [
     CONF_DHW_FLOW_RATE,
     CONF_PRESSURE,
     CONF_MODULATION,
+    CONF_DHW_TEMPERATURE,
     CONF_BOILER_TEMPERATURE,
     CONF_RETURN_TEMPERATURE,
 ]
@@ -87,6 +89,13 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_PERCENT,
                 icon=ICON_GAUGE,
                 accuracy_decimals=1,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_DHW_TEMPERATURE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_CELSIUS,
+                icon=ICON_THERMOMETER,
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_BOILER_TEMPERATURE): sensor.sensor_schema(

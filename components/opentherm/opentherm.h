@@ -34,6 +34,7 @@ class OpenThermComponent : public PollingComponent {
   sensor::Sensor *dhw_flow_rate_sensor_{nullptr};
   sensor::Sensor *pressure_sensor_{nullptr};
   sensor::Sensor *modulation_sensor_{nullptr};
+  sensor::Sensor *dhw_temperature_sensor_{nullptr};
   sensor::Sensor *boiler_temperature_sensor_{nullptr};
   sensor::Sensor *return_temperature_sensor_{nullptr};
 #endif
@@ -72,6 +73,7 @@ class OpenThermComponent : public PollingComponent {
   void set_dhw_flow_rate_sensor(sensor::Sensor *sensor) { dhw_flow_rate_sensor_ = sensor; }
   void set_pressure_sensor(sensor::Sensor *sensor) { pressure_sensor_ = sensor; }
   void set_modulation_sensor(sensor::Sensor *sensor) { modulation_sensor_ = sensor; }
+  void set_dhw_temperature_sensor(sensor::Sensor *sensor) { dhw_temperature_sensor_ = sensor; }
   void set_boiler_temperature_sensor(sensor::Sensor *sensor) { boiler_temperature_sensor_ = sensor; }
   void set_return_temperature_sensor(sensor::Sensor *sensor) { return_temperature_sensor_ = sensor; }
 #endif

@@ -27,6 +27,9 @@ Feel free to help me out and open a PR with improvements.
 
 ## Example entry for `config.yaml`:
 
+Note that the connected boiler might not support all sensors. If warnings are reported about unknown messages
+it usually means that the related sensor isn't supported. In that case, just remove that sensor from the config.
+
 ```yaml
 external_components:
   source: github://khenderick/esphome-opentherm
@@ -46,10 +49,14 @@ sensor:
       name: "DHW minimum temperature"
     dhw_max_temperature:
       name: "DHW maximum temperature"
+    dhw_flow_rate:
+      name: "DHW flow rate"
     pressure:
       name: "pressure"
     modulation:
       name: "modulation"
+    dhw_temperature:
+      name: "DHW temperature"
     boiler_temperature:
       name: "boiler temperature"
     return_temperature:

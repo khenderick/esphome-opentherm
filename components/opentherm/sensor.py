@@ -75,7 +75,6 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_LITERS_PER_MIN,
                 icon=ICON_GAUGE,
                 accuracy_decimals=1,
-                device_class=DEVICE_CLASS_WATER,
                 state_class=STATE_CLASS_MEASUREMENT
             ),
             cv.Optional(CONF_PRESSURE): sensor.sensor_schema(

@@ -63,6 +63,8 @@ sensor:
       name: "boiler 2 temperature"
     return_temperature:
       name: "return temperature"
+    outside_temperature:
+      name: "outside temperature"
     oem_error_code:
       name: "OEM error code"
     oem_diagnostic_code:

@@ -140,6 +140,9 @@ void OpenThermComponent::update() {
   if (this->dhw_temperature_sensor_) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP, 0);
   }
+  if (this->outside_temperature_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::OUTSIDE_TEMP, 0);
+  }
   if (this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0);
   }
@@ -189,6 +192,7 @@ void OpenThermComponent::dump_config() {
   LOG_SENSOR("  ", "Boiler temperature:", this->boiler_temperature_sensor_);
   LOG_SENSOR("  ", "Boiler 2 temperature:", this->boiler_2_temperature_sensor_);
   LOG_SENSOR("  ", "Return temperature:", this->return_temperature_sensor_);
+  LOG_SENSOR("  ", "Outside temperature:", this->outside_temperature_sensor_);
   LOG_SENSOR("  ", "OEM error code:", this->oem_error_code_sensor_);
   LOG_SENSOR("  ", "OEM diagnostic code:", this->oem_diagnostic_code_sensor_);
 #endif
@@ -468,6 +472,9 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         break;
       case OpenThermMessageID::BOILER_WATER_TEMP_2:
         this->publish_sensor_state_(this->boiler_2_temperature_sensor_, this->get_float_(response));
+        break;
+      case OpenThermMessageID::OUTSIDE_TEMP:
+        this->publish_sensor_state_(this->outside_temperature_sensor_, this->get_float_(response));
         break;
       case OpenThermMessageID::DHW_FLOW_RATE:
         this->publish_sensor_state_(this->dhw_flow_rate_sensor_, this->get_float_(response));

@@ -38,6 +38,7 @@ class OpenThermComponent : public PollingComponent {
   sensor::Sensor *boiler_temperature_sensor_{nullptr};
   sensor::Sensor *boiler_2_temperature_sensor_{nullptr};
   sensor::Sensor *return_temperature_sensor_{nullptr};
+  sensor::Sensor *outside_temperature_sensor_{nullptr};
   sensor::Sensor *oem_error_code_sensor_{nullptr};
   sensor::Sensor *oem_diagnostic_code_sensor_{nullptr};
 #endif
@@ -89,6 +90,7 @@ class OpenThermComponent : public PollingComponent {
   void set_boiler_temperature_sensor(sensor::Sensor *sensor) { boiler_temperature_sensor_ = sensor; }
   void set_boiler_2_temperature_sensor(sensor::Sensor *sensor) { boiler_2_temperature_sensor_ = sensor; }
   void set_return_temperature_sensor(sensor::Sensor *sensor) { return_temperature_sensor_ = sensor; }
+  void set_outside_temperature_sensor(sensor::Sensor *sensor) { outside_temperature_sensor_ = sensor; }
   void set_oem_error_code_sensor(sensor::Sensor *sensor) { oem_error_code_sensor_ = sensor; }
   void set_oem_diagnostic_code_sensor(sensor::Sensor *sensor) { oem_diagnostic_code_sensor_ = sensor; }
 #endif

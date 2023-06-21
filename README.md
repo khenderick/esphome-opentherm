@@ -59,13 +59,23 @@ sensor:
       name: "DHW temperature"
     boiler_temperature:
       name: "boiler temperature"
+    boiler_2_temperature:
+      name: "boiler 2 temperature"
     return_temperature:
       name: "return temperature"
+    outside_temperature:
+      name: "outside temperature"
+    oem_error_code:
+      name: "OEM error code"
+    oem_diagnostic_code:
+      name: "OEM diagnostic code"
 
 binary_sensor:
   - platform: opentherm
     ch_active:
       name: "CH active"
+    ch_2_active:
+      name: "CH 2 active"
     dhw_active:
       name: "DHW active"
     flame_active:
@@ -74,11 +84,25 @@ binary_sensor:
       name: "fault"
     diagnostic:
       name: "diagnostic"
+    service_request:
+      name: "service request"
+    lockout_reset:
+      name: "lockout reset"
+    water_pressure_fault:
+      name: "water pressure fault"
+    gas_flame_fault:
+      name: "gas/flame fault"
+    air_pressure_fault:
+      name: "air pressure fault"
+    water_over_temperature_fault:
+      name: "water over temperature fault"
 
 switch:
   - platform: opentherm
     ch_enabled:
       name: "CH enabled"
+    ch_2_enabled:
+      name: "CH 2 enabled"
     dhw_enabled:
       name: "DHW enabled"
 
@@ -86,6 +110,12 @@ number:
   - platform: opentherm
     ch_setpoint_temperature:
       name: "CH setpoint temperature"
+      min_value: 20.0
+      max_value: 45.0
+      step: 0.5
+      restore_value: true
+    ch_2_setpoint_temperature:
+      name: "CH 2 setpoint temperature"
       min_value: 20.0
       max_value: 45.0
       step: 0.5

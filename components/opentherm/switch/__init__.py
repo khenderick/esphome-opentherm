@@ -13,6 +13,7 @@ from .. import opentherm
 CustomSwitch = opentherm.class_("CustomSwitch", switch.Switch, cg.Component)
 
 CONF_CH_ENABLED = "ch_enabled"
+CONF_CH_2_ENABLED = "ch_2_enabled"
 CONF_DHW_ENABLED = "dhw_enabled"
 CONF_COOLING_ENABLED = "cooling_enabled"
 
@@ -21,6 +22,7 @@ ICON_SNOWFLAKE = "mdi:snowflake"
 
 TYPES = [
     CONF_CH_ENABLED,
+    CONF_CH_2_ENABLED,
     CONF_DHW_ENABLED,
     CONF_COOLING_ENABLED,
 ]
@@ -30,6 +32,10 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.GenerateID(CONF_OPENTHERM_ID): cv.use_id(OpenThermComponent),
             cv.Optional(CONF_CH_ENABLED): switch.switch_schema(
+                class_=CustomSwitch,
+                icon=ICON_RADIATOR,
+            ),
+            cv.Optional(CONF_CH_2_ENABLED): switch.switch_schema(
                 class_=CustomSwitch,
                 icon=ICON_RADIATOR,
             ),

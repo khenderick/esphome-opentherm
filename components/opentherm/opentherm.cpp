@@ -551,7 +551,7 @@ void OpenThermComponent::set_boiler_status_() {
 }
 
 void OpenThermComponent::enqueue_request_(uint32_t request) {
-  if (this->buffer_.size() > 20) {
+  if (this->buffer_.size() > 25) {
     this->log_message_(2, "Queue full. Discarded request", request);
   } else {
     this->buffer_.push(request);

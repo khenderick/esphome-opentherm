@@ -59,6 +59,8 @@ sensor:
       name: "DHW temperature"
     boiler_temperature:
       name: "boiler temperature"
+    boiler_2_temperature:
+      name: "boiler 2 temperature"
     return_temperature:
       name: "return temperature"
 
@@ -66,6 +68,8 @@ binary_sensor:
   - platform: opentherm
     ch_active:
       name: "CH active"
+    ch_2_active:
+      name: "CH 2 active"
     dhw_active:
       name: "DHW active"
     flame_active:
@@ -79,6 +83,8 @@ switch:
   - platform: opentherm
     ch_enabled:
       name: "CH enabled"
+    ch_2_enabled:
+      name: "CH 2 enabled"
     dhw_enabled:
       name: "DHW enabled"
 
@@ -86,6 +92,12 @@ number:
   - platform: opentherm
     ch_setpoint_temperature:
       name: "CH setpoint temperature"
+      min_value: 20.0
+      max_value: 45.0
+      step: 0.5
+      restore_value: true
+    ch_2_setpoint_temperature:
+      name: "CH 2 setpoint temperature"
       min_value: 20.0
       max_value: 45.0
       step: 0.5

@@ -9,6 +9,7 @@ from esphome.const import (
 from . import OpenThermComponent, CONF_OPENTHERM_ID
 
 CONF_CH_ACTIVE = "ch_active"
+CONF_CH_2_ACTIVE = "ch_2_active"
 CONF_DHW_ACTIVE = "dhw_active"
 CONF_FLAME_ACTIVE = "flame_active"
 CONF_COOLING_ACTIVE = "cooling_active"
@@ -17,6 +18,7 @@ CONF_DIAGNOSTIC = "diagnostic"
 
 TYPES = [
     CONF_CH_ACTIVE,
+    CONF_CH_2_ACTIVE,
     CONF_DHW_ACTIVE,
     CONF_COOLING_ACTIVE,
     CONF_FLAME_ACTIVE,
@@ -29,6 +31,9 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.GenerateID(CONF_OPENTHERM_ID): cv.use_id(OpenThermComponent),
             cv.Optional(CONF_CH_ACTIVE): binary_sensor.binary_sensor_schema(
+                device_class=DEVICE_CLASS_HEAT,
+            ),
+            cv.Optional(CONF_CH_2_ACTIVE): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_HEAT,
             ),
             cv.Optional(CONF_DHW_ACTIVE): binary_sensor.binary_sensor_schema(

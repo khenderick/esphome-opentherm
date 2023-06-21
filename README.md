@@ -63,6 +63,10 @@ sensor:
       name: "boiler 2 temperature"
     return_temperature:
       name: "return temperature"
+    oem_error_code:
+      name: "OEM error code"
+    oem_diagnostic_code:
+      name: "OEM diagnostic code"
 
 binary_sensor:
   - platform: opentherm
@@ -78,6 +82,18 @@ binary_sensor:
       name: "fault"
     diagnostic:
       name: "diagnostic"
+    service_request:
+      name: "service request"
+    lockout_reset:
+      name: "lockout reset"
+    water_pressure_fault:
+      name: "water pressure fault"
+    gas_flame_fault:
+      name: "gas/flame fault"
+    air_pressure_fault:
+      name: "air pressure fault"
+    water_over_temperature_fault:
+      name: "water over temperature fault"
 
 switch:
   - platform: opentherm

@@ -146,6 +146,28 @@ void OpenThermComponent::update() {
   if (this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0);
   }
+  if (this->oem_diagnostic_code_sensor_) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::OEM_DIAGNOSTIC_CODE, 0);
+  }
+#endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
+  if (
+#endif
+#ifdef USE_BINARY_SENSOR
+      this->service_request_binary_sensor_ || this->lockout_reset_binary_sensor_ || this->water_pressure_fault_binary_sensor_ ||
+      this->gas_flame_fault_binary_sensor_ ||  this->air_pressure_fault_binary_sensor_ ||
+      this->water_over_temperature_fault_binary_sensor_
+#endif
+#if defined USE_BINARY_SENSOR && defined USE_SENSOR
+      ||
+#endif
+#ifdef USE_SENSOR
+      this->oem_error_code_sensor_
+#endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
+  ) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::APP_SPEC_FAULT_FLAGS, 0);
+  }
 #endif
   this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
   this->set_boiler_status_();
@@ -167,6 +189,8 @@ void OpenThermComponent::dump_config() {
   LOG_SENSOR("  ", "Boiler temperature:", this->boiler_temperature_sensor_);
   LOG_SENSOR("  ", "Boiler 2 temperature:", this->boiler_2_temperature_sensor_);
   LOG_SENSOR("  ", "Return temperature:", this->return_temperature_sensor_);
+  LOG_SENSOR("  ", "OEM error code:", this->oem_error_code_sensor_);
+  LOG_SENSOR("  ", "OEM diagnostic code:", this->oem_diagnostic_code_sensor_);
 #endif
 #ifdef USE_BINARY_SENSOR
   LOG_BINARY_SENSOR("  ", "CH active:", this->ch_active_binary_sensor_);
@@ -176,6 +200,12 @@ void OpenThermComponent::dump_config() {
   LOG_BINARY_SENSOR("  ", "Flame active:", this->flame_active_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Fault:", fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Diagnostic:", this->diagnostic_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Service request:", this->service_request_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Lockout reset:", this->lockout_reset_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Water pressure fault:", this->water_pressure_fault_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Gas/flame fault:", this->gas_flame_fault_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Air pressure fault:", this->air_pressure_fault_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Water over temperature fault:", this->water_over_temperature_fault_binary_sensor_);
 #endif
 #ifdef USE_SWITCH
   LOG_SWITCH("  ", "CH enabled:", this->ch_enabled_switch_);
@@ -403,13 +433,30 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
     switch (this->get_data_id_(response)) {
 #ifdef USE_BINARY_SENSOR
       case OpenThermMessageID::STATUS:
-        this->publish_binary_sensor_state_(this->ch_active_binary_sensor_, this->is_central_heating_active_(response));
-        this->publish_binary_sensor_state_(this->ch_2_active_binary_sensor_, this->is_central_heating_2_active_(response));
-        this->publish_binary_sensor_state_(this->dhw_active_binary_sensor_, this->is_hot_water_active_(response));
-        this->publish_binary_sensor_state_(this->cooling_active_binary_sensor_, this->is_cooling_active_(response));
-        this->publish_binary_sensor_state_(this->flame_active_binary_sensor_, this->is_flame_on_(response));
-        this->publish_binary_sensor_state_(this->fault_binary_sensor_, this->is_fault_(response));
-        this->publish_binary_sensor_state_(this->diagnostic_binary_sensor_, this->is_diagnostic_(response));
+        this->publish_binary_sensor_state_(this->fault_binary_sensor_, response & 0x01);
+        this->publish_binary_sensor_state_(this->ch_active_binary_sensor_, response & 0x02);
+        this->publish_binary_sensor_state_(this->dhw_active_binary_sensor_, response & 0x04);
+        this->publish_binary_sensor_state_(this->flame_active_binary_sensor_, response & 0x08);
+        this->publish_binary_sensor_state_(this->cooling_active_binary_sensor_, response & 0x10);
+        this->publish_binary_sensor_state_(this->ch_2_active_binary_sensor_, response & 0x20);
+        this->publish_binary_sensor_state_(this->diagnostic_binary_sensor_, response & 0x40);
+        break;
+#endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
+      case OpenThermMessageID::APP_SPEC_FAULT_FLAGS:
+#endif
+#ifdef USE_BINARY_SENSOR
+        this->publish_binary_sensor_state_(this->service_request_binary_sensor_, response & 0x0100);
+        this->publish_binary_sensor_state_(this->lockout_reset_binary_sensor_, response & 0x0200);
+        this->publish_binary_sensor_state_(this->water_pressure_fault_binary_sensor_, response & 0x0400);
+        this->publish_binary_sensor_state_(this->gas_flame_fault_binary_sensor_, response & 0x0800);
+        this->publish_binary_sensor_state_(this->air_pressure_fault_binary_sensor_, response & 0x1000);
+        this->publish_binary_sensor_state_(this->water_over_temperature_fault_binary_sensor_, response & 0x2000);
+#endif
+#ifdef USE_SENSOR
+        this->publish_sensor_state_(this->oem_error_code_sensor_, response & 0xff);
+#endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
         break;
 #endif
 #ifdef USE_SENSOR
@@ -433,6 +480,9 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         break;
       case OpenThermMessageID::DHW_TEMP:
         this->publish_sensor_state_(this->dhw_temperature_sensor_, this->get_float_(response));
+        break;
+      case OpenThermMessageID::OEM_DIAGNOSTIC_CODE:
+        this->publish_sensor_state_(this->oem_diagnostic_code_sensor_, this->get_uint16_(response));
         break;
 #endif
       case OpenThermMessageID::DHW_TEMP_MAX_MIN:

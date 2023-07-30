@@ -35,12 +35,22 @@ class OpenThermComponent : public PollingComponent {
   sensor::Sensor *pressure_sensor_{nullptr};
   sensor::Sensor *modulation_sensor_{nullptr};
   sensor::Sensor *dhw_temperature_sensor_{nullptr};
+  sensor::Sensor *dhw_2_temperature_sensor_{nullptr};
   sensor::Sensor *boiler_temperature_sensor_{nullptr};
   sensor::Sensor *boiler_2_temperature_sensor_{nullptr};
   sensor::Sensor *return_temperature_sensor_{nullptr};
   sensor::Sensor *outside_temperature_sensor_{nullptr};
+  sensor::Sensor *exhaust_temperature_sensor_{nullptr};
   sensor::Sensor *oem_error_code_sensor_{nullptr};
   sensor::Sensor *oem_diagnostic_code_sensor_{nullptr};
+  sensor::Sensor *burner_starts_sensor_{nullptr};
+  sensor::Sensor *burner_ops_hours_sensor_{nullptr};
+  sensor::Sensor *ch_pump_starts_sensor_{nullptr};
+  sensor::Sensor *ch_pump_ops_hours_sensor_{nullptr};
+  sensor::Sensor *dhw_pump_valve_starts_sensor_{nullptr};
+  sensor::Sensor *dhw_pump_valve_ops_hours_sensor_{nullptr};
+  sensor::Sensor *dhw_burner_starts_sensor_{nullptr};
+  sensor::Sensor *dhw_burner_ops_hours_sensor_{nullptr};
 #endif
 #ifdef USE_BINARY_SENSOR
   binary_sensor::BinarySensor *ch_active_binary_sensor_{nullptr};
@@ -62,6 +72,7 @@ class OpenThermComponent : public PollingComponent {
   opentherm::CustomSwitch *ch_2_enabled_switch_{nullptr};
   opentherm::CustomSwitch *dhw_enabled_switch_{nullptr};
   opentherm::CustomSwitch *cooling_enabled_switch_{nullptr};
+  opentherm::CustomSwitch *otc_active_switch_{nullptr};
 #endif
 #ifdef USE_NUMBER
   opentherm::CustomNumber *ch_setpoint_temperature_number_{nullptr};
@@ -87,12 +98,22 @@ class OpenThermComponent : public PollingComponent {
   void set_pressure_sensor(sensor::Sensor *sensor) { pressure_sensor_ = sensor; }
   void set_modulation_sensor(sensor::Sensor *sensor) { modulation_sensor_ = sensor; }
   void set_dhw_temperature_sensor(sensor::Sensor *sensor) { dhw_temperature_sensor_ = sensor; }
+  void set_dhw_2_temperature_sensor(sensor::Sensor *sensor) { dhw_2_temperature_sensor_ = sensor; }
   void set_boiler_temperature_sensor(sensor::Sensor *sensor) { boiler_temperature_sensor_ = sensor; }
   void set_boiler_2_temperature_sensor(sensor::Sensor *sensor) { boiler_2_temperature_sensor_ = sensor; }
   void set_return_temperature_sensor(sensor::Sensor *sensor) { return_temperature_sensor_ = sensor; }
   void set_outside_temperature_sensor(sensor::Sensor *sensor) { outside_temperature_sensor_ = sensor; }
+  void set_exhaust_temperature_sensor(sensor::Sensor *sensor) { exhaust_temperature_sensor_ = sensor; }
   void set_oem_error_code_sensor(sensor::Sensor *sensor) { oem_error_code_sensor_ = sensor; }
   void set_oem_diagnostic_code_sensor(sensor::Sensor *sensor) { oem_diagnostic_code_sensor_ = sensor; }
+  void set_burner_starts_sensor(sensor::Sensor *sensor) { burner_starts_sensor_ = sensor; }
+  void set_burner_ops_hours_sensor(sensor::Sensor *sensor) { burner_ops_hours_sensor_ = sensor; }
+  void set_ch_pump_starts_sensor(sensor::Sensor *sensor) { ch_pump_starts_sensor_ = sensor; }
+  void set_ch_pump_ops_hours_sensor(sensor::Sensor *sensor) { ch_pump_ops_hours_sensor_ = sensor; }
+  void set_dhw_pump_valve_starts_sensor(sensor::Sensor *sensor) { dhw_pump_valve_starts_sensor_ = sensor; }
+  void set_dhw_pump_valve_ops_hours_sensor(sensor::Sensor *sensor) { dhw_pump_valve_ops_hours_sensor_ = sensor; }
+  void set_dhw_burner_starts_sensor(sensor::Sensor *sensor) { dhw_burner_starts_sensor_ = sensor; }
+  void set_dhw_burner_ops_hours_sensor(sensor::Sensor *sensor) { dhw_burner_ops_hours_sensor_ = sensor; }
 #endif
 #ifdef USE_BINARY_SENSOR
   void set_ch_active_binary_sensor(binary_sensor::BinarySensor *sensor) { ch_active_binary_sensor_ = sensor; }
@@ -126,6 +147,7 @@ class OpenThermComponent : public PollingComponent {
   void set_ch_2_enabled_switch(opentherm::CustomSwitch *custom_switch) { ch_2_enabled_switch_ = custom_switch; }
   void set_dhw_enabled_switch(opentherm::CustomSwitch *custom_switch) { dhw_enabled_switch_ = custom_switch; }
   void set_cooling_enabled_switch(opentherm::CustomSwitch *custom_switch) { cooling_enabled_switch_ = custom_switch; }
+  void set_otc_active_switch(opentherm::CustomSwitch *custom_switch) { otc_active_switch_ = custom_switch; }
 #endif
 #ifdef USE_NUMBER
   void set_ch_setpoint_temperature_number(opentherm::CustomNumber *number) { ch_setpoint_temperature_number_ = number; }
@@ -149,6 +171,7 @@ class OpenThermComponent : public PollingComponent {
   bool wanted_ch_2_enabled_ = false;
   bool wanted_dhw_enabled_ = false;
   bool wanted_cooling_enabled_ = false;
+  bool wanted_otc_active_ = false;
   volatile uint32_t response_ = 0;
   volatile OpenThermResponseStatus response_status_ = OpenThermResponseStatus::NONE;
   volatile OpenThermStatus status_ = OpenThermStatus::NOT_INITIALIZED;
@@ -188,6 +211,10 @@ class OpenThermComponent : public PollingComponent {
   uint16_t get_uint16_(const uint32_t response) const {
     const uint16_t u88 = response & 0xffff;
     return u88;
+  }
+  int16_t get_int16_(const uint32_t response) const {
+    const uint16_t u88 = get_uint16_(response);
+    return (int16_t) u88;
   }
   float get_float_(const uint32_t response) const {
     const uint16_t u88 = get_uint16_(response);

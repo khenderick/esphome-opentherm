@@ -16,15 +16,18 @@ CONF_CH_ENABLED = "ch_enabled"
 CONF_CH_2_ENABLED = "ch_2_enabled"
 CONF_DHW_ENABLED = "dhw_enabled"
 CONF_COOLING_ENABLED = "cooling_enabled"
+CONF_OTC_ACTIVE = "otc_active"
 
 ICON_WATER_BOILER = "mdi:water-boiler"
 ICON_SNOWFLAKE = "mdi:snowflake"
+ICON_THERMOMETER_AUTO = "mdi:thermometer-auto"
 
 TYPES = [
     CONF_CH_ENABLED,
     CONF_CH_2_ENABLED,
     CONF_DHW_ENABLED,
     CONF_COOLING_ENABLED,
+    CONF_OTC_ACTIVE,
 ]
 
 CONFIG_SCHEMA = cv.All(
@@ -46,6 +49,10 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_COOLING_ENABLED): switch.switch_schema(
                 class_=CustomSwitch,
                 icon=ICON_SNOWFLAKE,
+            ),
+            cv.Optional(CONF_OTC_ACTIVE): switch.switch_schema(
+                class_=CustomSwitch,
+                icon=ICON_THERMOMETER_AUTO,
             ),
         }
     ).extend(cv.COMPONENT_SCHEMA)

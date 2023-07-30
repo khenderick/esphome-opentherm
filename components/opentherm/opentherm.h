@@ -144,7 +144,6 @@ class OpenThermComponent : public PollingComponent {
 
   std::queue<uint32_t> buffer_;
   float confirmed_dhw_setpoint_ = 0;
-  uint32_t last_millis_ = 0;
   bool wanted_ch_enabled_ = false;
   bool wanted_ch_2_enabled_ = false;
   bool wanted_dhw_enabled_ = false;
@@ -154,6 +153,25 @@ class OpenThermComponent : public PollingComponent {
   volatile OpenThermStatus status_ = OpenThermStatus::NOT_INITIALIZED;
   volatile uint32_t response_timestamp_ = 0;
   volatile uint8_t response_bit_index_ = 0;
+  uint32_t last_millis_ = 0;
+  uint32_t start_millis_ = 0;
+  uint16_t start_interval_ = 0;
+
+  uint32_t last_millis_return_water_temp_ = 0;
+  uint32_t last_millis_boiler_water_temp_ = 0;
+  uint32_t last_millis_boiler_2_water_temp_ = 0;
+  uint32_t last_millis_flow_rate_ = 0;
+  uint32_t last_millis_ch_pressure_ = 0;
+  uint32_t last_millis_rel_mod_level_ = 0;
+  uint32_t last_millis_dhw_temp_ = 0;
+  uint32_t last_millis_outside_temp_ = 0;
+  uint32_t last_millis_ch_max_min_temp_ = 0;
+  uint32_t last_millis_dhw_max_min_temp_ = 0;
+  uint32_t last_millis_oem_diagnostic_code_ = 0;
+  uint32_t last_millis_fault_flags_ = 0;
+  uint32_t last_millis_param_flags_ = 0;
+
+  void update_spread_();
 
   void request_(OpenThermMessageType type, OpenThermMessageID id, unsigned int data);
   void set_boiler_status_();
@@ -183,6 +201,16 @@ class OpenThermComponent : public PollingComponent {
   void set_active_state_();
   void set_idle_state_();
   void send_bit_(bool high);
+  bool is_elapsed_(uint32_t &last_millis, uint16_t interval) const {
+    uint32_t current_millis = millis();
+    if (last_millis == 0 || current_millis < last_millis || current_millis - last_millis > interval) {
+      last_millis = current_millis;
+      return true;
+    }
+    return false;
+  }
+  bool can_start_(uint32_t last_millis, uint8_t index);
+  bool should_request_(uint32_t &last_millis, uint8_t index);
 
   bool is_valid_response_(uint32_t response);
   uint16_t get_uint16_(const uint32_t response) const {

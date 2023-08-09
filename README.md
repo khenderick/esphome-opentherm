@@ -57,6 +57,8 @@ sensor:
       name: "modulation"
     dhw_temperature:
       name: "DHW temperature"
+    dhw_2_temperature:
+      name: "DHW 2 temperature"
     boiler_temperature:
       name: "boiler temperature"
     boiler_2_temperature:
@@ -65,10 +67,28 @@ sensor:
       name: "return temperature"
     outside_temperature:
       name: "outside temperature"
+    exhaust_temperature:
+      name: "exhaust temperature"
     oem_error_code:
       name: "OEM error code"
     oem_diagnostic_code:
       name: "OEM diagnostic code"
+    burner_starts:
+      name: "burner starts"
+    burner_ops_hours:
+      name: "burner operation hours"
+    ch_pump_starts:
+      name: "CH pump starts"
+    ch_pump_ops_hours:
+      name: "CH pump operation hours"
+    dhw_pump_valve_starts:
+      name: "DHW pump/valve starts"
+    dhw_pump_valve_ops_hours:
+      name: "DHW pump/valve operation hours"
+    dhw_burner_starts:
+      name: "DHW burner starts"
+    dhw_burner_ops_hours:
+      name: "DHW burner operation hours"
 
 binary_sensor:
   - platform: opentherm
@@ -96,6 +116,18 @@ binary_sensor:
       name: "air pressure fault"
     water_over_temperature_fault:
       name: "water over temperature fault"
+    dhw_present:
+      name: "DHW present (= true, not present = false)"
+    modulating:
+      name: "boiler uses modulating (= true, on/off = false)"
+    cooling_supported:
+      name: "cooling supported (= true, unsupported = false)"
+    dhw_storage_tank:
+      name: "DHW storage tank (= true, instantaneous/unsupported = false)"
+    device_lowoff_pump_control:
+      name: "device low-off/pump control allowed (= true, not allowed = false)"
+    ch_2_present:
+      name: "CH 2 present (= true, not present = false)"
 
 switch:
   - platform: opentherm
@@ -105,6 +137,8 @@ switch:
       name: "CH 2 enabled"
     dhw_enabled:
       name: "DHW enabled"
+    otc_active:
+      name: "OTC active"
 
 number:
   - platform: opentherm

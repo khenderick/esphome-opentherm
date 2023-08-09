@@ -29,7 +29,7 @@ void OpenThermComponent::setup() {
   this->status_ = OpenThermStatus::READY;
 
   this->start_millis_ = millis();
-  this->start_interval_ = this->get_update_interval() / 13;
+  this->start_interval_ = this->get_update_interval() / 24;
 
 #ifdef USE_SWITCH
   if (this->ch_enabled_switch_) {
@@ -64,6 +64,15 @@ void OpenThermComponent::setup() {
       if (this->wanted_cooling_enabled_ != enabled) {
         ESP_LOGI(TAG, "%s cooling", (enabled ? "Enabled" : "Disabled"));
         this->wanted_cooling_enabled_ = enabled;
+        this->set_boiler_status_();
+      }
+    });
+  }
+  if (this->otc_active_switch_) {
+    this->otc_active_switch_->add_on_state_callback([this](bool active) {
+      if (this->wanted_otc_active_ != active) {
+        ESP_LOGI(TAG, "OTC %s", (active ? "activated" : "deactivated"));
+        this->wanted_otc_active_ = active;
         this->set_boiler_status_();
       }
     });
@@ -149,17 +158,47 @@ void OpenThermComponent::update_spread_() {
   if (this->dhw_temperature_sensor_ && this->should_request_(this->last_millis_dhw_temp_, 6)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP, 0);
   }
-  if (this->outside_temperature_sensor_ && this->should_request_(this->last_millis_outside_temp_, 7)) {
+  if (this->dhw_2_temperature_sensor_ && this->should_request_(this->last_millis_dhw_2_temp_, 7)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_2, 0);
+  }
+  if (this->outside_temperature_sensor_ && this->should_request_(this->last_millis_outside_temp_, 8)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::OUTSIDE_TEMP, 0);
   }
-  if ((this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) && this->should_request_(this->last_millis_dhw_max_min_temp_, 8)) {
+  if (this->exhaust_temperature_sensor_ && this->should_request_(this->last_millis_exhaust_temp_, 9)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_EXHAUST_TEMP, 0);
+  }
+  if ((this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) && this->should_request_(this->last_millis_dhw_max_min_temp_, 10)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0);
   }
-  if ((this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) && this->should_request_(this->last_millis_ch_max_min_temp_, 9)) {
+  if ((this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) && this->should_request_(this->last_millis_ch_max_min_temp_, 11)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0);
   }
-  if (this->oem_diagnostic_code_sensor_ && this->should_request_(this->last_millis_oem_diagnostic_code_, 10)) {
+  if (this->oem_diagnostic_code_sensor_ && this->should_request_(this->last_millis_oem_diagnostic_code_, 12)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::OEM_DIAGNOSTIC_CODE, 0);
+  }
+  if (this->burner_starts_sensor_ && this->should_request_(this->last_millis_burner_starts_, 13)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BURNER_STARTS, 0);
+  }
+  if (this->burner_ops_hours_sensor_ && this->should_request_(this->last_millis_burner_ops_hours_, 14)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BURNER_OPS_HOURS, 0);
+  }
+  if (this->ch_pump_starts_sensor_ && this->should_request_(this->last_millis_ch_pump_starts_, 15)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PUMP_STARTS, 0);
+  }
+  if (this->ch_pump_ops_hours_sensor_ && this->should_request_(this->last_millis_ch_pump_ops_hours_, 16)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PUMP_OPS_HOURS, 0);
+  }
+  if (this->dhw_pump_valve_starts_sensor_ && this->should_request_(this->last_millis_dhw_pump_valve_starts_, 17)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_PUMP_VALVE_STARTS, 0);
+  }
+  if (this->dhw_pump_valve_ops_hours_sensor_ && this->should_request_(this->last_millis_dhw_pump_valve_ops_hours_, 18)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_PUMP_VALVE_OPS_HOURS, 0);
+  }
+  if (this->dhw_burner_starts_sensor_ && this->should_request_(this->last_millis_dhw_burner_starts_, 19)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_BURNER_STARTS, 0);
+  }
+  if (this->dhw_burner_ops_hours_sensor_ && this->should_request_(this->last_millis_dhw_burner_ops_hours_, 20)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_BURNER_OPS_HOURS, 0);
   }
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR
@@ -177,11 +216,19 @@ void OpenThermComponent::update_spread_() {
       this->oem_error_code_sensor_
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR
-  ) && this->should_request_(this->last_millis_fault_flags_, 11)) {
+  ) && this->should_request_(this->last_millis_fault_flags_, 21)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::APP_SPEC_FAULT_FLAGS, 0);
   }
 #endif
-  if (should_request_(this->last_millis_param_flags_, 12)) {
+#ifdef USE_BINARY_SENSOR
+  if ((
+      this->dhw_present_binary_sensor_ || this->modulating_binary_sensor_ || this->cooling_supported_binary_sensor_ ||
+      this->dhw_storage_tank_binary_sensor_ || this->device_lowoff_pump_control_binary_sensor_ || this->ch_2_present_binary_sensor_
+  ) && this->should_request_(this->last_millis_boiler_configuration_, 22)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_CONFIGURATION, 0);
+  }
+#endif
+  if (should_request_(this->last_millis_param_flags_, 23)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
   }
 }
@@ -199,12 +246,22 @@ void OpenThermComponent::dump_config() {
   LOG_SENSOR("  ", "Pressure:", this->pressure_sensor_);
   LOG_SENSOR("  ", "Modulation:", this->modulation_sensor_);
   LOG_SENSOR("  ", "DHW temperature:", this->dhw_temperature_sensor_);
+  LOG_SENSOR("  ", "DHW 2 temperature:", this->dhw_2_temperature_sensor_);
   LOG_SENSOR("  ", "Boiler temperature:", this->boiler_temperature_sensor_);
   LOG_SENSOR("  ", "Boiler 2 temperature:", this->boiler_2_temperature_sensor_);
   LOG_SENSOR("  ", "Return temperature:", this->return_temperature_sensor_);
   LOG_SENSOR("  ", "Outside temperature:", this->outside_temperature_sensor_);
+  LOG_SENSOR("  ", "Exhaust temperature:", this->exhaust_temperature_sensor_);
   LOG_SENSOR("  ", "OEM error code:", this->oem_error_code_sensor_);
   LOG_SENSOR("  ", "OEM diagnostic code:", this->oem_diagnostic_code_sensor_);
+  LOG_SENSOR("  ", "Burner starts:", this->burner_starts_sensor_);
+  LOG_SENSOR("  ", "Burner operation hours:", this->burner_ops_hours_sensor_);
+  LOG_SENSOR("  ", "CH pump starts:", this->ch_pump_starts_sensor_);
+  LOG_SENSOR("  ", "CP pump operation hours:", this->ch_pump_ops_hours_sensor_);
+  LOG_SENSOR("  ", "DHW pump/valve starts:", this->dhw_pump_valve_starts_sensor_);
+  LOG_SENSOR("  ", "DHW pump/valve operation hours:", this->dhw_pump_valve_ops_hours_sensor_);
+  LOG_SENSOR("  ", "DHW burner starts:", this->dhw_burner_starts_sensor_);
+  LOG_SENSOR("  ", "DHW burner operation hours:", this->dhw_burner_ops_hours_sensor_);
 #endif
 #ifdef USE_BINARY_SENSOR
   LOG_BINARY_SENSOR("  ", "CH active:", this->ch_active_binary_sensor_);
@@ -220,12 +277,19 @@ void OpenThermComponent::dump_config() {
   LOG_BINARY_SENSOR("  ", "Gas/flame fault:", this->gas_flame_fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Air pressure fault:", this->air_pressure_fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Water over temperature fault:", this->water_over_temperature_fault_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "dhw_present:", this->dhw_present_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "modulating:", this->modulating_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "cooling_supported:", this->cooling_supported_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "dhw_storage_tank:", this->dhw_storage_tank_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "device_lowoff_pump_control:", this->device_lowoff_pump_control_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "ch_2_present:", this->ch_2_present_binary_sensor_);
 #endif
 #ifdef USE_SWITCH
   LOG_SWITCH("  ", "CH enabled:", this->ch_enabled_switch_);
   LOG_SWITCH("  ", "CH 2 enabled:", this->ch_2_enabled_switch_);
   LOG_SWITCH("  ", "DHW enabled:", this->dhw_enabled_switch_);
   LOG_SWITCH("  ", "Cooling enabled:", this->cooling_enabled_switch_);
+  LOG_SWITCH("  ", "OTC active:", this->otc_active_switch_);
 #endif
 #ifdef USE_NUMBER
   if (this->ch_setpoint_temperature_number_) {
@@ -455,6 +519,14 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         this->publish_binary_sensor_state_(this->ch_2_active_binary_sensor_, response & 0x20);
         this->publish_binary_sensor_state_(this->diagnostic_binary_sensor_, response & 0x40);
         break;
+      case OpenThermMessageID::BOILER_CONFIGURATION:
+        this->publish_binary_sensor_state_(this->dhw_present_binary_sensor_, response & 0x01);
+        this->publish_binary_sensor_state_(this->modulating_binary_sensor_, !(response & 0x02));
+        this->publish_binary_sensor_state_(this->cooling_supported_binary_sensor_, response & 0x04);
+        this->publish_binary_sensor_state_(this->dhw_storage_tank_binary_sensor_, response & 0x08);
+        this->publish_binary_sensor_state_(this->device_lowoff_pump_control_binary_sensor_, !(response & 0x10));
+        this->publish_binary_sensor_state_(this->ch_2_present_binary_sensor_, response & 0x20);
+        break;
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR
       case OpenThermMessageID::APP_SPEC_FAULT_FLAGS:
@@ -486,6 +558,9 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
       case OpenThermMessageID::OUTSIDE_TEMP:
         this->publish_sensor_state_(this->outside_temperature_sensor_, this->get_float_(response));
         break;
+      case OpenThermMessageID::BOILER_EXHAUST_TEMP:
+        this->publish_sensor_state_(this->exhaust_temperature_sensor_, this->get_int16_(response));
+        break;
       case OpenThermMessageID::DHW_FLOW_RATE:
         this->publish_sensor_state_(this->dhw_flow_rate_sensor_, this->get_float_(response));
         break;
@@ -498,22 +573,45 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
       case OpenThermMessageID::DHW_TEMP:
         this->publish_sensor_state_(this->dhw_temperature_sensor_, this->get_float_(response));
         break;
+      case OpenThermMessageID::DHW_TEMP_2:
+        this->publish_sensor_state_(this->dhw_2_temperature_sensor_, this->get_float_(response));
+        break;
       case OpenThermMessageID::OEM_DIAGNOSTIC_CODE:
         this->publish_sensor_state_(this->oem_diagnostic_code_sensor_, this->get_uint16_(response));
         break;
-#endif
+      case OpenThermMessageID::BURNER_STARTS:
+        this->publish_sensor_state_(this->burner_starts_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::BURNER_OPS_HOURS:
+        this->publish_sensor_state_(this->burner_ops_hours_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::CH_PUMP_STARTS:
+        this->publish_sensor_state_(this->ch_pump_starts_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::CH_PUMP_OPS_HOURS:
+        this->publish_sensor_state_(this->ch_pump_ops_hours_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::DHW_PUMP_VALVE_STARTS:
+        this->publish_sensor_state_(this->dhw_pump_valve_starts_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::DHW_PUMP_VALVE_OPS_HOURS:
+        this->publish_sensor_state_(this->dhw_pump_valve_ops_hours_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::DHW_BURNER_STARTS:
+        this->publish_sensor_state_(this->dhw_burner_starts_sensor_, this->get_uint16_(response));
+        break;
+      case OpenThermMessageID::DHW_BURNER_OPS_HOURS:
+        this->publish_sensor_state_(this->dhw_burner_ops_hours_sensor_, this->get_uint16_(response));
+        break;
       case OpenThermMessageID::DHW_TEMP_MAX_MIN:
-#ifdef USE_SENSOR
         this->publish_sensor_state_(this->dhw_max_temperature_sensor_, response >> 8 & 0xFF);
         this->publish_sensor_state_(this->dhw_min_temperature_sensor_, response & 0xFF);
-#endif
         break;
       case OpenThermMessageID::CH_TEMP_MAX_MIN:
-#ifdef USE_SENSOR
         this->publish_sensor_state_(this->ch_max_temperature_sensor_, response >> 8 & 0xFF);
         this->publish_sensor_state_(this->ch_min_temperature_sensor_, response & 0xFF);
-#endif
         break;
+#endif
       case OpenThermMessageID::DHW_SETPOINT:
         if (this->get_message_type_(response) == OpenThermMessageType::WRITE_ACK) {
           this->confirmed_dhw_setpoint_ = this->get_float_(response);
@@ -554,7 +652,7 @@ void OpenThermComponent::request_(OpenThermMessageType type, OpenThermMessageID 
 void OpenThermComponent::set_boiler_status_() {
   // Fields: CH enabled | DHW enabled | cooling | outside temperature compensation | CH 2 enabled
   unsigned int data = this->wanted_ch_enabled_ | (this->wanted_dhw_enabled_ << 1) |
-                      (this->wanted_cooling_enabled_ << 2) | (false << 3) |
+                      (this->wanted_cooling_enabled_ << 2) | (this->wanted_otc_active_ << 3) |
                       (this->wanted_ch_2_enabled_ << 4);
   data <<= 8;
   this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::STATUS, data);

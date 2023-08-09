@@ -29,7 +29,7 @@ void OpenThermComponent::setup() {
   this->status_ = OpenThermStatus::READY;
 
   this->start_millis_ = millis();
-  this->start_interval_ = this->get_update_interval() / 23;
+  this->start_interval_ = this->get_update_interval() / 24;
 
 #ifdef USE_SWITCH
   if (this->ch_enabled_switch_) {
@@ -220,7 +220,15 @@ void OpenThermComponent::update_spread_() {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::APP_SPEC_FAULT_FLAGS, 0);
   }
 #endif
-  if (should_request_(this->last_millis_param_flags_, 22)) {
+#ifdef USE_BINARY_SENSOR
+  if ((
+      this->dhw_present_binary_sensor_ || this->modulating_binary_sensor_ || this->cooling_supported_binary_sensor_ ||
+      this->dhw_storage_tank_binary_sensor_ || this->device_lowoff_pump_control_binary_sensor_ || this->ch_2_present_binary_sensor_
+  ) && this->should_request_(this->last_millis_boiler_configuration_, 22)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_CONFIGURATION, 0);
+  }
+#endif
+  if (should_request_(this->last_millis_param_flags_, 23)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
   }
 }
@@ -269,6 +277,12 @@ void OpenThermComponent::dump_config() {
   LOG_BINARY_SENSOR("  ", "Gas/flame fault:", this->gas_flame_fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Air pressure fault:", this->air_pressure_fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Water over temperature fault:", this->water_over_temperature_fault_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "dhw_present:", this->dhw_present_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "modulating:", this->modulating_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "cooling_supported:", this->cooling_supported_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "dhw_storage_tank:", this->dhw_storage_tank_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "device_lowoff_pump_control:", this->device_lowoff_pump_control_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "ch_2_present:", this->ch_2_present_binary_sensor_);
 #endif
 #ifdef USE_SWITCH
   LOG_SWITCH("  ", "CH enabled:", this->ch_enabled_switch_);
@@ -504,6 +518,14 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         this->publish_binary_sensor_state_(this->cooling_active_binary_sensor_, response & 0x10);
         this->publish_binary_sensor_state_(this->ch_2_active_binary_sensor_, response & 0x20);
         this->publish_binary_sensor_state_(this->diagnostic_binary_sensor_, response & 0x40);
+        break;
+      case OpenThermMessageID::BOILER_CONFIGURATION:
+        this->publish_binary_sensor_state_(this->dhw_present_binary_sensor_, response & 0x01);
+        this->publish_binary_sensor_state_(this->modulating_binary_sensor_, !(response & 0x02));
+        this->publish_binary_sensor_state_(this->cooling_supported_binary_sensor_, response & 0x04);
+        this->publish_binary_sensor_state_(this->dhw_storage_tank_binary_sensor_, response & 0x08);
+        this->publish_binary_sensor_state_(this->device_lowoff_pump_control_binary_sensor_, !(response & 0x10));
+        this->publish_binary_sensor_state_(this->ch_2_present_binary_sensor_, response & 0x20);
         break;
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR

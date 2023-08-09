@@ -66,6 +66,12 @@ class OpenThermComponent : public PollingComponent {
   binary_sensor::BinarySensor *gas_flame_fault_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *air_pressure_fault_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *water_over_temperature_fault_binary_sensor_{nullptr};
+  binary_sensor::BinarySensor *dhw_present_binary_sensor_{nullptr};
+  binary_sensor::BinarySensor *modulating_binary_sensor_{nullptr};
+  binary_sensor::BinarySensor *cooling_supported_binary_sensor_{nullptr};
+  binary_sensor::BinarySensor *dhw_storage_tank_binary_sensor_{nullptr};
+  binary_sensor::BinarySensor *device_lowoff_pump_control_binary_sensor_{nullptr};
+  binary_sensor::BinarySensor *ch_2_present_binary_sensor_{nullptr};
 #endif
 #ifdef USE_SWITCH
   opentherm::CustomSwitch *ch_enabled_switch_{nullptr};
@@ -141,6 +147,14 @@ class OpenThermComponent : public PollingComponent {
   void set_water_over_temperature_fault_binary_sensor(binary_sensor::BinarySensor *sensor) {
     water_over_temperature_fault_binary_sensor_ = sensor;
   }
+  void set_dhw_present_binary_sensor(binary_sensor::BinarySensor *sensor) { dhw_present_binary_sensor_ = sensor; }
+  void set_modulating_binary_sensor(binary_sensor::BinarySensor *sensor) { modulating_binary_sensor_ = sensor; }
+  void set_cooling_supported_binary_sensor(binary_sensor::BinarySensor *sensor) { cooling_supported_binary_sensor_ = sensor; }
+  void set_dhw_storage_tank_binary_sensor(binary_sensor::BinarySensor *sensor) { dhw_storage_tank_binary_sensor_ = sensor; }
+  void set_device_lowoff_pump_control_binary_sensor(binary_sensor::BinarySensor *sensor) {
+    device_lowoff_pump_control_binary_sensor_ = sensor;
+  }
+  void set_ch_2_present_binary_sensor(binary_sensor::BinarySensor *sensor) { ch_2_present_binary_sensor_ = sensor; }
 #endif
 #ifdef USE_SWITCH
   void set_ch_enabled_switch(opentherm::CustomSwitch *custom_switch) { ch_enabled_switch_ = custom_switch; }
@@ -203,6 +217,7 @@ class OpenThermComponent : public PollingComponent {
   uint32_t last_millis_dhw_pump_valve_ops_hours_ = 0;
   uint32_t last_millis_dhw_burner_starts_ = 0;
   uint32_t last_millis_dhw_burner_ops_hours_ = 0;
+  uint32_t last_millis_boiler_configuration_ = 0;
 
   void update_spread_();
 

@@ -116,6 +116,18 @@ binary_sensor:
       name: "air pressure fault"
     water_over_temperature_fault:
       name: "water over temperature fault"
+    dhw_present:
+      name: "DHW present (= true, not present = false)"
+    modulating:
+      name: "boiler uses modulating (= true, on/off = false)"
+    cooling_supported:
+      name: "cooling supported (= true, unsupported = false)"
+    dhw_storage_tank:
+      name: "DHW storage tank (= true, instantaneous/unsupported = false)"
+    device_lowoff_pump_control:
+      name: "device low-off/pump control allowed (= true, not allowed = false)"
+    ch_2_present:
+      name: "CH 2 present (= true, not present = false)"
 
 switch:
   - platform: opentherm

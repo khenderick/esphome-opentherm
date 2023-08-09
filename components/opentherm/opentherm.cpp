@@ -28,6 +28,9 @@ void OpenThermComponent::setup() {
   delay(25);
   this->status_ = OpenThermStatus::READY;
 
+  this->start_millis_ = millis();
+  this->start_interval_ = this->get_update_interval() / 23;
+
 #ifdef USE_SWITCH
   if (this->ch_enabled_switch_) {
     this->ch_enabled_switch_->add_on_state_callback([this](bool enabled) {
@@ -101,11 +104,12 @@ void OpenThermComponent::loop() {
     this->log_message_(0, "Sending request", request);
     this->send_request_async_(request);
   }
+
+  this->update_spread_();
 #ifdef USE_NUMBER
-  if (millis() - last_millis_ > 2000) {
+  if (is_elapsed_(last_millis_, 2000)) {
     // The CH setpoint must be written at a fast interval or the boiler
     // might revert to a build-in default as a safety measure.
-    last_millis_ = millis();
     if (this->ch_setpoint_temperature_number_) {
       this->request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::CH_SETPOINT,
                      this->temperature_to_data_(this->ch_setpoint_temperature_number_->state));
@@ -122,78 +126,83 @@ void OpenThermComponent::loop() {
     }
   }
 #endif
+
   this->process_();
   yield();
 }
 
 void OpenThermComponent::update() {
+  this->set_boiler_status_();
+}
+
+void OpenThermComponent::update_spread_() {
 #ifdef USE_SENSOR
-  if (this->return_temperature_sensor_) {
+  if (this->return_temperature_sensor_ && this->should_request_(this->last_millis_return_water_temp_, 0)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::RETURN_WATER_TEMP, 0);
   }
-  if (this->boiler_temperature_sensor_) {
+  if (this->boiler_temperature_sensor_ && this->should_request_(this->last_millis_boiler_water_temp_, 1)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_WATER_TEMP, 0);
   }
-  if (this->boiler_2_temperature_sensor_) {
+  if (this->boiler_2_temperature_sensor_ && this->should_request_(this->last_millis_boiler_2_water_temp_, 2)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_WATER_TEMP_2, 0);
   }
-  if (this->dhw_flow_rate_sensor_) {
+  if (this->dhw_flow_rate_sensor_ && this->should_request_(this->last_millis_flow_rate_, 3)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_FLOW_RATE, 0);
   }
-  if (this->pressure_sensor_) {
+  if (this->pressure_sensor_ && this->should_request_(this->last_millis_ch_pressure_, 4)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PRESSURE, 0);
   }
-  if (this->modulation_sensor_) {
+  if (this->modulation_sensor_ && this->should_request_(this->last_millis_rel_mod_level_, 5)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REL_MOD_LEVEL, 0);
   }
-  if (this->dhw_temperature_sensor_) {
+  if (this->dhw_temperature_sensor_ && this->should_request_(this->last_millis_dhw_temp_, 6)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP, 0);
   }
-  if (this->dhw_2_temperature_sensor_) {
+  if (this->dhw_2_temperature_sensor_ && this->should_request_(this->last_millis_dhw_2_temp_, 7)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_2, 0);
   }
-  if (this->outside_temperature_sensor_) {
+  if (this->outside_temperature_sensor_ && this->should_request_(this->last_millis_outside_temp_, 8)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::OUTSIDE_TEMP, 0);
   }
-  if (this->exhaust_temperature_sensor_) {
+  if (this->exhaust_temperature_sensor_ && this->should_request_(this->last_millis_exhaust_temp_, 9)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_EXHAUST_TEMP, 0);
   }
-  if (this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) {
+  if ((this->dhw_max_temperature_sensor_ || this->dhw_min_temperature_sensor_) && this->should_request_(this->last_millis_dhw_max_min_temp_, 10)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_TEMP_MAX_MIN, 0);
   }
-  if (this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) {
+  if ((this->ch_max_temperature_sensor_ || this->ch_min_temperature_sensor_) && this->should_request_(this->last_millis_ch_max_min_temp_, 11)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_TEMP_MAX_MIN, 0);
   }
-  if (this->oem_diagnostic_code_sensor_) {
+  if (this->oem_diagnostic_code_sensor_ && this->should_request_(this->last_millis_oem_diagnostic_code_, 12)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::OEM_DIAGNOSTIC_CODE, 0);
   }
-  if (this->burner_starts_sensor_) {
+  if (this->burner_starts_sensor_ && this->should_request_(this->last_millis_burner_starts_, 13)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BURNER_STARTS, 0);
   }
-  if (this->burner_ops_hours_sensor_) {
+  if (this->burner_ops_hours_sensor_ && this->should_request_(this->last_millis_burner_ops_hours_, 14)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BURNER_OPS_HOURS, 0);
   }
-  if (this->ch_pump_starts_sensor_) {
+  if (this->ch_pump_starts_sensor_ && this->should_request_(this->last_millis_ch_pump_starts_, 15)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PUMP_STARTS, 0);
   }
-  if (this->ch_pump_ops_hours_sensor_) {
+  if (this->ch_pump_ops_hours_sensor_ && this->should_request_(this->last_millis_ch_pump_ops_hours_, 16)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::CH_PUMP_OPS_HOURS, 0);
   }
-  if (this->dhw_pump_valve_starts_sensor_) {
+  if (this->dhw_pump_valve_starts_sensor_ && this->should_request_(this->last_millis_dhw_pump_valve_starts_, 17)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_PUMP_VALVE_STARTS, 0);
   }
-  if (this->dhw_pump_valve_ops_hours_sensor_) {
+  if (this->dhw_pump_valve_ops_hours_sensor_ && this->should_request_(this->last_millis_dhw_pump_valve_ops_hours_, 18)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_PUMP_VALVE_OPS_HOURS, 0);
   }
-  if (this->dhw_burner_starts_sensor_) {
+  if (this->dhw_burner_starts_sensor_ && this->should_request_(this->last_millis_dhw_burner_starts_, 19)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_BURNER_STARTS, 0);
   }
-  if (this->dhw_burner_ops_hours_sensor_) {
+  if (this->dhw_burner_ops_hours_sensor_ && this->should_request_(this->last_millis_dhw_burner_ops_hours_, 20)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHW_BURNER_OPS_HOURS, 0);
   }
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR
-  if (
+  if ((
 #endif
 #ifdef USE_BINARY_SENSOR
       this->service_request_binary_sensor_ || this->lockout_reset_binary_sensor_ || this->water_pressure_fault_binary_sensor_ ||
@@ -207,12 +216,13 @@ void OpenThermComponent::update() {
       this->oem_error_code_sensor_
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR
-  ) {
+  ) && this->should_request_(this->last_millis_fault_flags_, 21)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::APP_SPEC_FAULT_FLAGS, 0);
   }
 #endif
-  this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
-  this->set_boiler_status_();
+  if (should_request_(this->last_millis_param_flags_, 22)) {
+    this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::REMOTE_PARAM_FLAGS, 0);
+  }
 }
 
 void OpenThermComponent::dump_config() {
@@ -633,6 +643,23 @@ void OpenThermComponent::enqueue_request_(uint32_t request) {
     this->buffer_.push(request);
     this->log_message_(0, "Enqueued request", request);
   }
+}
+
+bool OpenThermComponent::can_start_(uint32_t last_millis, uint8_t index) {
+  if (last_millis > 0) {
+    return true;
+  }
+  uint32_t now = millis();
+  if (this->start_millis_ > now) {
+    this->start_millis_ = now;
+    return false;
+  }
+  bool can_start = now > this->start_millis_ + (this->start_interval_ * index);
+  return can_start;
+}
+
+bool OpenThermComponent::should_request_(uint32_t &last_millis, uint8_t index) {
+    return can_start_(last_millis, index) && is_elapsed_(last_millis, this->get_update_interval());
 }
 
 const char *OpenThermComponent::format_message_type_(uint32_t message) {

@@ -185,8 +185,6 @@ class OpenThermComponent : public PollingComponent {
     dhw_setpoint_temperature_number_ = number;
   }
 #endif
-
- protected:
   void boiler_lo_reset();
   void ch_water_filling();
 

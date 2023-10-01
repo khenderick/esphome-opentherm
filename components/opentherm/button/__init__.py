@@ -2,10 +2,13 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import button
 from esphome.const import (
-    DEVICE_CLASS_RESTART,
-    DEVICE_CLASS_WATER
+    DEVICE_CLASS_EMPTY
 )
-from components.opentherm import OpenThermComponent, CONF_OPENTHERM_ID, opentherm
+from ...opentherm import (
+    OpenThermComponent,
+    CONF_OPENTHERM_ID,
+)
+from .. import opentherm
 
 CONF_BOILER_LO_RESET = "boiler_lo_reset"
 CONF_CH_WATER_FILLING = "ch_water_filling"
@@ -28,12 +31,12 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(CONF_OPENTHERM_ID): cv.use_id(OpenThermComponent),
             cv.Optional(CONF_BOILER_LO_RESET): button.button_schema(
                 BoilerLOResetButton,
-                device_class=DEVICE_CLASS_RESTART,
+                device_class=DEVICE_CLASS_EMPTY,
                 icon=ICON_RESET,
             ),
             cv.Optional(CONF_CH_WATER_FILLING): button.button_schema(
                 CHWaterFillingButton,
-                device_class=DEVICE_CLASS_WATER,
+                device_class=DEVICE_CLASS_EMPTY,
                 icon=ICON_WATER_FILLING,
             )
         }
@@ -41,13 +44,15 @@ CONFIG_SCHEMA = cv.All(
 )
 
 
+async def setup_conf(config, key, hub):
+    if key in config:
+        conf = config[key]
+        var = await button.new_button(conf)
+        await cg.register_parented(var, config[CONF_OPENTHERM_ID])
+        cg.add(getattr(hub, f"set_{key}_button")(var))
+
+
 async def to_code(config):
-    opentherm_component = await cg.get_variable(config[CONF_OPENTHERM_ID])
-    if config_boiler_lo_reset := config.get(CONF_BOILER_LO_RESET):
-        b = await button.new_button(config_boiler_lo_reset)
-        await cg.register_parented(b, config[CONF_OPENTHERM_ID])
-        cg.add(opentherm_component.set_boiler_lo_reset_button(b))
-    if config_ch_water_filling := config.get(CONF_CH_WATER_FILLING):
-        b = await button.new_button(config_ch_water_filling)
-        await cg.register_parented(b, config[CONF_OPENTHERM_ID])
-        cg.add(opentherm_component.set_ch_water_filling_button(b))
+    hub = await cg.get_variable(config[CONF_OPENTHERM_ID])
+    for key in TYPES:
+        await setup_conf(config, key, hub)

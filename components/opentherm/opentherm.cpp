@@ -351,8 +351,6 @@ void IRAM_ATTR OpenThermComponent::handle_interrupt(OpenThermComponent *componen
   }
 }
 
-// Protected
-
 void OpenThermComponent::boiler_lo_reset() {
   ESP_LOGI(TAG, "Execute: Boiler lock-out reset");
   this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x1);

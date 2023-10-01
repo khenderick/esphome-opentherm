@@ -353,12 +353,12 @@ void IRAM_ATTR OpenThermComponent::handle_interrupt(OpenThermComponent *componen
 
 void OpenThermComponent::boiler_lo_reset() {
   ESP_LOGI(TAG, "Execute: Boiler lock-out reset");
-  this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x1);
+  this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x100);
 }
 
 void OpenThermComponent::ch_water_filling() {
   ESP_LOGI(TAG, "Execute: CH water filling");
-  this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x2);
+  this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x200);
 }
 
 // Private

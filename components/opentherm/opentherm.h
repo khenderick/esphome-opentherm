@@ -11,6 +11,9 @@
 #ifdef USE_BINARY_SENSOR
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #endif
+#ifdef USE_BUTTON
+#include "esphome/components/button/button.h"
+#endif
 #ifdef USE_SWITCH
 #include "switch/custom_switch.h"
 #endif
@@ -72,6 +75,10 @@ class OpenThermComponent : public PollingComponent {
   binary_sensor::BinarySensor *dhw_storage_tank_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *device_lowoff_pump_control_binary_sensor_{nullptr};
   binary_sensor::BinarySensor *ch_2_present_binary_sensor_{nullptr};
+#endif
+#ifdef USE_BUTTON
+  button::Button *boiler_lo_reset_button_{nullptr};
+  button::Button *ch_water_filling_button_{nullptr};
 #endif
 #ifdef USE_SWITCH
   opentherm::CustomSwitch *ch_enabled_switch_{nullptr};
@@ -158,6 +165,10 @@ class OpenThermComponent : public PollingComponent {
   }
   void set_ch_2_present_binary_sensor(binary_sensor::BinarySensor *sensor) { ch_2_present_binary_sensor_ = sensor; }
 #endif
+#ifdef USE_BUTTON
+  void set_boiler_lo_reset_button(button::Button *button) { boiler_lo_reset_button_ = button; }
+  void set_ch_water_filling_button(button::Button *button) { ch_water_filling_button_ = button; }
+#endif
 #ifdef USE_SWITCH
   void set_ch_enabled_switch(opentherm::CustomSwitch *custom_switch) { ch_enabled_switch_ = custom_switch; }
   void set_ch_2_enabled_switch(opentherm::CustomSwitch *custom_switch) { ch_2_enabled_switch_ = custom_switch; }
@@ -174,6 +185,10 @@ class OpenThermComponent : public PollingComponent {
     dhw_setpoint_temperature_number_ = number;
   }
 #endif
+
+ protected:
+  void boiler_lo_reset();
+  void ch_water_filling();
 
  private:
   InternalGPIOPin *read_pin_;

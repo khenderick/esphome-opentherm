@@ -279,12 +279,16 @@ void OpenThermComponent::dump_config() {
   LOG_BINARY_SENSOR("  ", "Gas/flame fault:", this->gas_flame_fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Air pressure fault:", this->air_pressure_fault_binary_sensor_);
   LOG_BINARY_SENSOR("  ", "Water over temperature fault:", this->water_over_temperature_fault_binary_sensor_);
-  LOG_BINARY_SENSOR("  ", "dhw_present:", this->dhw_present_binary_sensor_);
-  LOG_BINARY_SENSOR("  ", "modulating:", this->modulating_binary_sensor_);
-  LOG_BINARY_SENSOR("  ", "cooling_supported:", this->cooling_supported_binary_sensor_);
-  LOG_BINARY_SENSOR("  ", "dhw_storage_tank:", this->dhw_storage_tank_binary_sensor_);
-  LOG_BINARY_SENSOR("  ", "device_lowoff_pump_control:", this->device_lowoff_pump_control_binary_sensor_);
-  LOG_BINARY_SENSOR("  ", "ch_2_present:", this->ch_2_present_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "DHW present:", this->dhw_present_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Modulating :", this->modulating_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Cooling supported:", this->cooling_supported_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "DHW storage tank:", this->dhw_storage_tank_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "Device low-off/pump control allowed:", this->device_lowoff_pump_control_binary_sensor_);
+  LOG_BINARY_SENSOR("  ", "CH 2 present:", this->ch_2_present_binary_sensor_);
+#endif
+#ifdef USE_BUTTON
+  LOG_BUTTON("  ", "Boiler lock-out reset:", this->boiler_lo_reset_button_);
+  LOG_BUTTON("  ", "CH water filling:", this->ch_water_filling_button_);
 #endif
 #ifdef USE_SWITCH
   LOG_SWITCH("  ", "CH enabled:", this->ch_enabled_switch_);
@@ -345,6 +349,16 @@ void IRAM_ATTR OpenThermComponent::handle_interrupt(OpenThermComponent *componen
       }
     }
   }
+}
+
+void OpenThermComponent::boiler_lo_reset() {
+  ESP_LOGI(TAG, "Execute: Boiler lock-out reset");
+  this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x100);
+}
+
+void OpenThermComponent::ch_water_filling() {
+  ESP_LOGI(TAG, "Execute: CH water filling");
+  this->request_(opentherm::OpenThermMessageType::WRITE_DATA, opentherm::OpenThermMessageID::COMMAND, 0x200);
 }
 
 // Private

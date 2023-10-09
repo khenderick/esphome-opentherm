@@ -160,4 +160,11 @@ number:
       max_value: 60.0
       step: 0.5
       restore_value: true
+
+button:
+  - platform: opentherm
+    boiler_lo_reset:
+      name: "Boiler lock-out reset"
+    ch_water_filling:
+      name: "CH water filling"
 ```

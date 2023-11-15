@@ -22,6 +22,8 @@ TYPES = [
     CONF_CH_WATER_FILLING,
 ]
 
+DEPENDENCIES = ["opentherm"]
+
 BoilerLOResetButton = opentherm.class_("BoilerLOResetButton", button.Button)
 CHWaterFillingButton = opentherm.class_("CHWaterFillingButton", button.Button)
 
@@ -45,8 +47,7 @@ CONFIG_SCHEMA = cv.All(
 
 
 async def setup_conf(config, key, hub):
-    if key in config:
-        conf = config[key]
+    if conf := config.get(key):
         var = await button.new_button(conf)
         await cg.register_parented(var, config[CONF_OPENTHERM_ID])
         cg.add(getattr(hub, f"set_{key}_button")(var))

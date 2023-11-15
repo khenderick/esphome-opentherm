@@ -471,7 +471,7 @@ OpenThermMessageID OpenThermComponent::get_data_id_(uint32_t frame) {
   return (OpenThermMessageID) ((frame >> 16) & 0xFF);
 }
 
-uint32_t OpenThermComponent::build_request_(OpenThermMessageType type, OpenThermMessageID id, unsigned int data) {
+uint32_t OpenThermComponent::build_request_(OpenThermMessageType type, OpenThermMessageID id, uint32_t data) {
   uint32_t request = data;
   if (type == OpenThermMessageType::WRITE_DATA) {
     request |= 1ul << 28;
@@ -482,7 +482,7 @@ uint32_t OpenThermComponent::build_request_(OpenThermMessageType type, OpenTherm
   return request;
 }
 
-uint32_t OpenThermComponent::build_response_(OpenThermMessageType type, OpenThermMessageID id, unsigned int data) {
+uint32_t OpenThermComponent::build_response_(OpenThermMessageType type, OpenThermMessageID id, uint32_t data) {
   uint32_t response = data;
   response |= type << 28;
   response |= ((uint32_t) id) << 16;
@@ -661,13 +661,13 @@ void OpenThermComponent::publish_binary_sensor_state_(binary_sensor::BinarySenso
 }
 #endif
 
-void OpenThermComponent::request_(OpenThermMessageType type, OpenThermMessageID id, unsigned int data) {
+void OpenThermComponent::request_(OpenThermMessageType type, OpenThermMessageID id, uint32_t data) {
   this->enqueue_request_(this->build_request_(type, id, data));
 }
 
 void OpenThermComponent::set_boiler_status_() {
   // Fields: CH enabled | DHW enabled | cooling | outside temperature compensation | CH 2 enabled
-  unsigned int data = this->wanted_ch_enabled_ | (this->wanted_dhw_enabled_ << 1) |
+  uint32_t data = this->wanted_ch_enabled_ | (this->wanted_dhw_enabled_ << 1) |
                       (this->wanted_cooling_enabled_ << 2) | (this->wanted_otc_active_ << 3) |
                       (this->wanted_ch_2_enabled_ << 4);
   data <<= 8;

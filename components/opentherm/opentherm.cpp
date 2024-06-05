@@ -94,6 +94,16 @@ void OpenThermComponent::setup() {
     this->dhw_setpoint_temperature_number_->add_on_state_callback(
         [](float temperature) { ESP_LOGI(TAG, "Request updating CH setpoint to %f", temperature); });
   }
+  if (this->max_ch_setpoint_temperature_number_) {
+    this->max_ch_setpoint_temperature_number_->setup();
+    this->max_ch_setpoint_temperature_number_->add_on_state_callback(
+        [](float temperature) { ESP_LOGI(TAG, "Request updating max CH setpoint to %f", temperature); });
+  }
+  if (this->max_modulation_number_) {
+    this->max_modulation_number_->setup();
+    this->max_modulation_number_->add_on_state_callback(
+        [](float modulation) { ESP_LOGI(TAG, "Request updating max modulation to %f", modulation); });
+  }
 #endif
 }
 
@@ -123,6 +133,16 @@ void OpenThermComponent::loop() {
         this->request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::DHW_SETPOINT,
                        this->temperature_to_data_(this->dhw_setpoint_temperature_number_->state));
       }
+    }
+    if (this->max_ch_setpoint_temperature_number_) {
+      if (this->confirmed_max_ch_setpoint_ != this->max_ch_setpoint_temperature_number_->state) {
+        this->request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::MAX_CH_SETPOINT,
+                       this->temperature_to_data_(this->max_ch_setpoint_temperature_number_->state));
+      }
+    }
+    if (this->max_modulation_number_) {
+      this->request_(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::MAX_REL_MOD_LEVEL_SETTING,
+                     this->temperature_to_data_(this->max_modulation_number_->state));
     }
   }
 #endif
@@ -222,10 +242,22 @@ void OpenThermComponent::update_spread_() {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::APP_SPEC_FAULT_FLAGS, 0);
   }
 #endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
+  if ((
+#endif
 #ifdef USE_BINARY_SENSOR
-  if ((this->dhw_present_binary_sensor_ || this->modulating_binary_sensor_ || this->cooling_supported_binary_sensor_ ||
-       this->dhw_storage_tank_binary_sensor_ || this->device_lowoff_pump_control_binary_sensor_ ||
-       this->ch_2_present_binary_sensor_) &&
+          this->dhw_present_binary_sensor_ || this->modulating_binary_sensor_ ||
+          this->cooling_supported_binary_sensor_ || this->dhw_storage_tank_binary_sensor_ ||
+          this->device_lowoff_pump_control_binary_sensor_ || this->ch_2_present_binary_sensor_
+#endif
+#if defined USE_BINARY_SENSOR && defined USE_SENSOR
+          ||
+#endif
+#ifdef USE_SENSOR
+          this->boiler_member_id_sensor_
+#endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
+          ) &&
       this->should_request_(this->last_millis_boiler_configuration_, 22)) {
     this->request_(OpenThermMessageType::READ_DATA, OpenThermMessageID::BOILER_CONFIGURATION, 0);
   }
@@ -264,6 +296,7 @@ void OpenThermComponent::dump_config() {
   LOG_SENSOR("  ", "DHW pump/valve operation hours:", this->dhw_pump_valve_ops_hours_sensor_);
   LOG_SENSOR("  ", "DHW burner starts:", this->dhw_burner_starts_sensor_);
   LOG_SENSOR("  ", "DHW burner operation hours:", this->dhw_burner_ops_hours_sensor_);
+  LOG_SENSOR("  ", "Boiler member ID:", this->boiler_member_id_sensor_);
 #endif
 #ifdef USE_BINARY_SENSOR
   LOG_BINARY_SENSOR("  ", "CH active:", this->ch_active_binary_sensor_);
@@ -309,6 +342,14 @@ void OpenThermComponent::dump_config() {
   if (this->dhw_setpoint_temperature_number_) {
     LOG_NUMBER("  ", "DHW setpoint temperature:", this->dhw_setpoint_temperature_number_);
     this->dhw_setpoint_temperature_number_->dump_custom_config("  ");
+  }
+  if (this->max_ch_setpoint_temperature_number_) {
+    LOG_NUMBER("  ", "Max CH setpoint temperature:", this->max_ch_setpoint_temperature_number_);
+    this->max_ch_setpoint_temperature_number_->dump_custom_config("  ");
+  }
+  if (this->max_modulation_number_) {
+    LOG_NUMBER("  ", "Maximum modulation:", this->max_modulation_number_);
+    this->max_modulation_number_->dump_custom_config("  ");
   }
 #endif
 }
@@ -468,7 +509,7 @@ OpenThermMessageType OpenThermComponent::get_message_type_(uint32_t message) {
 }
 
 OpenThermMessageID OpenThermComponent::get_data_id_(uint32_t frame) {
-  return (OpenThermMessageID) ((frame >> 16) & 0xFF);
+  return (OpenThermMessageID) ((frame >> 16) & 0xff);
 }
 
 uint32_t OpenThermComponent::build_request_(OpenThermMessageType type, OpenThermMessageID id, uint32_t data) {
@@ -535,16 +576,23 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
         this->publish_binary_sensor_state_(this->ch_2_active_binary_sensor_, response & 0x20);
         this->publish_binary_sensor_state_(this->diagnostic_binary_sensor_, response & 0x40);
         break;
-      case OpenThermMessageID::BOILER_CONFIGURATION:
-        this->publish_binary_sensor_state_(this->dhw_present_binary_sensor_, response & 0x01);
-        this->publish_binary_sensor_state_(this->modulating_binary_sensor_, !(response & 0x02));
-        this->publish_binary_sensor_state_(this->cooling_supported_binary_sensor_, response & 0x04);
-        this->publish_binary_sensor_state_(this->dhw_storage_tank_binary_sensor_, response & 0x08);
-        this->publish_binary_sensor_state_(this->device_lowoff_pump_control_binary_sensor_, !(response & 0x10));
-        this->publish_binary_sensor_state_(this->ch_2_present_binary_sensor_, response & 0x20);
-        break;
 #endif
 #if defined USE_BINARY_SENSOR || defined USE_SENSOR
+      case OpenThermMessageID::BOILER_CONFIGURATION:
+#endif
+#ifdef USE_BINARY_SENSOR
+        this->publish_binary_sensor_state_(this->dhw_present_binary_sensor_, response & 0x0100);
+        this->publish_binary_sensor_state_(this->modulating_binary_sensor_, !(response & 0x0200));
+        this->publish_binary_sensor_state_(this->cooling_supported_binary_sensor_, response & 0x0400);
+        this->publish_binary_sensor_state_(this->dhw_storage_tank_binary_sensor_, response & 0x0800);
+        this->publish_binary_sensor_state_(this->device_lowoff_pump_control_binary_sensor_, !(response & 0x1000));
+        this->publish_binary_sensor_state_(this->ch_2_present_binary_sensor_, response & 0x2000);
+#endif
+#ifdef USE_SENSOR
+        this->publish_sensor_state_(this->boiler_member_id_sensor_, response & 0xff);
+#endif
+#if defined USE_BINARY_SENSOR || defined USE_SENSOR
+        break;
       case OpenThermMessageID::APP_SPEC_FAULT_FLAGS:
 #endif
 #ifdef USE_BINARY_SENSOR
@@ -631,6 +679,11 @@ void OpenThermComponent::process_response_(uint32_t response, OpenThermResponseS
       case OpenThermMessageID::DHW_SETPOINT:
         if (this->get_message_type_(response) == OpenThermMessageType::WRITE_ACK) {
           this->confirmed_dhw_setpoint_ = this->get_float_(response);
+        }
+        break;
+      case OpenThermMessageID::MAX_CH_SETPOINT:
+        if (this->get_message_type_(response) == OpenThermMessageType::WRITE_ACK) {
+          this->confirmed_max_ch_setpoint_ = this->get_float_(response);
         }
         break;
       default:

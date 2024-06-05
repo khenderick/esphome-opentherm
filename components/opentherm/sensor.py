@@ -6,6 +6,7 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_PRESSURE,
     DEVICE_CLASS_EMPTY,
+    ENTITY_CATEGORY_DIAGNOSTIC,
     ICON_GAUGE,
     ICON_THERMOMETER,
     ICON_EMPTY,
@@ -41,6 +42,7 @@ CONF_DHW_PUMP_VALVE_STARTS = "dhw_pump_valve_starts"
 CONF_DHW_PUMP_VALVE_OPS_HOURS = "dhw_pump_valve_ops_hours"
 CONF_DHW_BURNER_STARTS = "dhw_burner_starts"
 CONF_DHW_BURNER_OPS_HOURS = "dhw_burner_ops_hours"
+CONF_MEMBER_ID = "boiler_member_id"
 
 ICON_HOME_THERMOMETER = "mdi:home-thermometer"
 ICON_WATER_THERMOMETER = "mdi:water-thermometer"
@@ -73,6 +75,7 @@ TYPES = [
     CONF_DHW_PUMP_VALVE_OPS_HOURS,
     CONF_DHW_BURNER_STARTS,
     CONF_DHW_BURNER_OPS_HOURS,
+    CONF_MEMBER_ID,
 ]
 
 CONFIG_SCHEMA = cv.All(
@@ -176,60 +179,77 @@ CONFIG_SCHEMA = cv.All(
                 icon=ICON_EMPTY,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_OEM_DIAGNOSTIC_CODE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_EMPTY,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_BURNER_STARTS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_COUNTER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_BURNER_OPS_HOURS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_TIMER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_CH_PUMP_STARTS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_COUNTER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_CH_PUMP_OPS_HOURS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_TIMER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_DHW_PUMP_VALVE_STARTS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_COUNTER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_DHW_PUMP_VALVE_OPS_HOURS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_TIMER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_DHW_BURNER_STARTS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_COUNTER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_DHW_BURNER_OPS_HOURS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_TIMER,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+            ),
+            cv.Optional(CONF_MEMBER_ID): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_EMPTY,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
         }
     ).extend(cv.COMPONENT_SCHEMA)

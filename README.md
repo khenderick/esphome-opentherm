@@ -89,6 +89,8 @@ sensor:
       name: "DHW burner starts"
     dhw_burner_ops_hours:
       name: "DHW burner operation hours"
+    boiler_member_id:
+      name: "Boiler member ID"
 
 binary_sensor:
   - platform: opentherm
@@ -119,7 +121,7 @@ binary_sensor:
     dhw_present:
       name: "DHW present (= true, not present = false)"
     modulating:
-      name: "boiler uses modulating (= true, on/off = false)"
+      name: "boiler uses modulation (= true, on/off = false)"
     cooling_supported:
       name: "cooling supported (= true, unsupported = false)"
     dhw_storage_tank:
@@ -158,6 +160,18 @@ number:
       name: "DHW setpoint temperature"
       min_value: 38.0
       max_value: 60.0
+      step: 0.5
+      restore_value: true
+    max_ch_setpoint_temperature:
+      name: "Max CH setpoint temperature"
+      min_value: 0.0
+      max_value: 100.0
+      step: 0.5
+      restore_value: true
+    max_modulation:
+      name: "Max modulation level"
+      min_value: 0.0
+      max_value: 100.0
       step: 0.5
       restore_value: true
 

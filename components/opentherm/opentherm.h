@@ -53,6 +53,7 @@ class OpenThermComponent : public PollingComponent {
   SUB_SENSOR(dhw_pump_valve_ops_hours);
   SUB_SENSOR(dhw_burner_starts);
   SUB_SENSOR(dhw_burner_ops_hours);
+  SUB_SENSOR(boiler_member_id);
 #endif
 #ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(ch_active);
@@ -90,6 +91,8 @@ class OpenThermComponent : public PollingComponent {
   SUB_OPENTHERM_NUMBER(ch_setpoint_temperature);
   SUB_OPENTHERM_NUMBER(ch_2_setpoint_temperature);
   SUB_OPENTHERM_NUMBER(dhw_setpoint_temperature);
+  SUB_OPENTHERM_NUMBER(max_ch_setpoint_temperature);
+  SUB_OPENTHERM_NUMBER(max_modulation);
 #endif
 
  public:
@@ -111,6 +114,7 @@ class OpenThermComponent : public PollingComponent {
 
   std::queue<uint32_t> buffer_;
   float confirmed_dhw_setpoint_ = 0;
+  float confirmed_max_ch_setpoint_ = 0;
   bool wanted_ch_enabled_ = false;
   bool wanted_ch_2_enabled_ = false;
   bool wanted_dhw_enabled_ = false;
@@ -149,6 +153,7 @@ class OpenThermComponent : public PollingComponent {
   uint32_t last_millis_dhw_burner_starts_ = 0;
   uint32_t last_millis_dhw_burner_ops_hours_ = 0;
   uint32_t last_millis_boiler_configuration_ = 0;
+  uint32_t last_millis_max_ch_setpoint_temperature_ = 0;
 
   void update_spread_();
 

@@ -6,6 +6,7 @@ from esphome.const import (
     DEVICE_CLASS_HEAT,
     DEVICE_CLASS_PROBLEM,
     DEVICE_CLASS_EMPTY,
+    ENTITY_CATEGORY_DIAGNOSTIC,
 )
 from . import OpenThermComponent, CONF_OPENTHERM_ID
 
@@ -72,29 +73,37 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_FAULT): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_DIAGNOSTIC): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_SERVICE_REQUEST): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_LOCKOUT_RESET): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_WATER_PRESSURE_FAULT): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_GAS_FLAME_FAULT): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_AIR_PRESSURE_FAULT): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(
                 CONF_WATER_OVER_TEMPERATURE_FAULT
             ): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_PROBLEM,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
             cv.Optional(CONF_DHW_PRESENT): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_EMPTY,

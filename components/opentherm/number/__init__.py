@@ -8,7 +8,9 @@ from esphome.const import (
     CONF_MODE,
     CONF_RESTORE_VALUE,
     CONF_STEP,
+    ICON_GAUGE,
     UNIT_CELSIUS,
+    UNIT_PERCENT,
 )
 from ...opentherm import (
     OpenThermComponent,
@@ -23,6 +25,8 @@ OpenThermNumber = opentherm.class_("OpenThermNumber", number.Number, cg.Componen
 CONF_CH_SETPOINT_TEMPERATURE = "ch_setpoint_temperature"
 CONF_CH_2_SETPOINT_TEMPERATURE = "ch_2_setpoint_temperature"
 CONF_DHW_SETPOINT_TEMPERATURE = "dhw_setpoint_temperature"
+CONF_MAX_CH_SETPOINT_TEMPERATURE = "max_ch_setpoint_temperature"
+CONF_MAX_MODULATION = "max_modulation"
 
 ICON_HOME_THERMOMETER = "mdi:home-thermometer"
 ICON_WATER_THERMOMETER = "mdi:water-thermometer"
@@ -31,6 +35,8 @@ TYPES = [
     CONF_CH_SETPOINT_TEMPERATURE,
     CONF_CH_2_SETPOINT_TEMPERATURE,
     CONF_DHW_SETPOINT_TEMPERATURE,
+    CONF_MAX_CH_SETPOINT_TEMPERATURE,
+    CONF_MAX_MODULATION,
 ]
 
 CONFIG_SCHEMA = cv.All(
@@ -77,6 +83,42 @@ CONFIG_SCHEMA = cv.All(
                 OpenThermNumber,
                 icon=ICON_WATER_THERMOMETER,
                 unit_of_measurement=UNIT_CELSIUS,
+            )
+            .extend(
+                {
+                    cv.Required(CONF_MAX_VALUE): cv.float_,
+                    cv.Required(CONF_MIN_VALUE): cv.float_,
+                    cv.Required(CONF_STEP): cv.positive_float,
+                    cv.Optional(CONF_MODE, default="BOX"): cv.enum(
+                        number.NUMBER_MODES, upper=True
+                    ),
+                    cv.Optional(CONF_INITIAL_VALUE): cv.float_,
+                    cv.Optional(CONF_RESTORE_VALUE): cv.boolean,
+                }
+            )
+            .extend(cv.COMPONENT_SCHEMA),
+            cv.Optional(CONF_MAX_CH_SETPOINT_TEMPERATURE): number.number_schema(
+                OpenThermNumber,
+                icon=ICON_WATER_THERMOMETER,
+                unit_of_measurement=UNIT_CELSIUS,
+            )
+            .extend(
+                {
+                    cv.Required(CONF_MAX_VALUE): cv.float_,
+                    cv.Required(CONF_MIN_VALUE): cv.float_,
+                    cv.Required(CONF_STEP): cv.positive_float,
+                    cv.Optional(CONF_MODE, default="BOX"): cv.enum(
+                        number.NUMBER_MODES, upper=True
+                    ),
+                    cv.Optional(CONF_INITIAL_VALUE): cv.float_,
+                    cv.Optional(CONF_RESTORE_VALUE): cv.boolean,
+                }
+            )
+            .extend(cv.COMPONENT_SCHEMA),
+            cv.Optional(CONF_MAX_MODULATION): number.number_schema(
+                OpenThermNumber,
+                icon=ICON_GAUGE,
+                unit_of_measurement=UNIT_PERCENT,
             )
             .extend(
                 {

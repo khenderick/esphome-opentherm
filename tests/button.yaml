@@ -1,0 +1,9 @@
+packages:
+  wifi: !include base.yaml
+
+button:
+  - platform: opentherm
+    boiler_lo_reset:
+      name: "Boiler lock-out reset"
+    ch_water_filling:
+      name: "CH water filling"

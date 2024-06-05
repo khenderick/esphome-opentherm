@@ -1,0 +1,13 @@
+packages:
+  wifi: !include base.yaml
+
+switch:
+  - platform: opentherm
+    ch_enabled:
+      name: "CH enabled"
+    ch_2_enabled:
+      name: "CH 2 enabled"
+    dhw_enabled:
+      name: "DHW enabled"
+    otc_active:
+      name: "OTC active"

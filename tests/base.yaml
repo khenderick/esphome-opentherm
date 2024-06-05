@@ -1,0 +1,35 @@
+esp32:
+  board: wemos_d1_mini32
+
+esphome:
+  name: "all"
+
+logger:
+
+api:
+  encryption:
+    key: "KROVsdSjY3U8Omfei71yVkZqC0XU7ka+bIjUp70B5wM="
+
+ota:
+  safe_mode: true
+  password: "1234567890"
+
+wifi:
+  ssid: "1234567890"
+  password: "1234567890"
+  manual_ip:
+    static_ip: "1.0.0.2"
+    gateway: "1.0.0.1"
+    subnet: "255.0.0.0"
+    dns1: "10.0.0.1"
+
+external_components:
+  # source: ../some/path/to/repo/components
+  # source: github://khenderick/esphome-opentherm  # @some_branch
+  source: ../../esphome-opentherm/components
+  components: [opentherm]
+  refresh: 0s
+
+opentherm:
+  read_pin: 21
+  write_pin: 22

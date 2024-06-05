@@ -1,0 +1,35 @@
+packages:
+  wifi: !include base.yaml
+
+number:
+  - platform: opentherm
+    ch_setpoint_temperature:
+      name: "CH setpoint temperature"
+      min_value: 20.0
+      max_value: 45.0
+      step: 0.5
+      restore_value: true
+    ch_2_setpoint_temperature:
+      name: "CH 2 setpoint temperature"
+      min_value: 20.0
+      max_value: 45.0
+      step: 0.5
+      restore_value: true
+    dhw_setpoint_temperature:
+      name: "DHW setpoint temperature"
+      min_value: 38.0
+      max_value: 60.0
+      step: 0.5
+      restore_value: true
+    max_ch_setpoint_temperature:
+      name: "Max CH setpoint temperature"
+      min_value: 0.0
+      max_value: 100.0
+      step: 0.5
+      restore_value: true
+    max_modulation:
+      name: "Max modulation level"
+      min_value: 0.0
+      max_value: 100.0
+      step: 0.5
+      restore_value: true

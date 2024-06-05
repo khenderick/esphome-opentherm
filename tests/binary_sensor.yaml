@@ -1,0 +1,41 @@
+packages:
+  wifi: !include base.yaml
+
+binary_sensor:
+  - platform: opentherm
+    ch_active:
+      name: "CH active"
+    ch_2_active:
+      name: "CH 2 active"
+    dhw_active:
+      name: "DHW active"
+    flame_active:
+      name: "flame active"
+    fault:
+      name: "fault"
+    diagnostic:
+      name: "diagnostic"
+    service_request:
+      name: "service request"
+    lockout_reset:
+      name: "lockout reset"
+    water_pressure_fault:
+      name: "water pressure fault"
+    gas_flame_fault:
+      name: "gas/flame fault"
+    air_pressure_fault:
+      name: "air pressure fault"
+    water_over_temperature_fault:
+      name: "water over temperature fault"
+    dhw_present:
+      name: "DHW present (= true, not present = false)"
+    modulating:
+      name: "boiler uses modulation (= true, on/off = false)"
+    cooling_supported:
+      name: "cooling supported (= true, unsupported = false)"
+    dhw_storage_tank:
+      name: "DHW storage tank (= true, instantaneous/unsupported = false)"
+    device_lowoff_pump_control:
+      name: "device low-off/pump control allowed (= true, not allowed = false)"
+    ch_2_present:
+      name: "CH 2 present (= true, not present = false)"
